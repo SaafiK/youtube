@@ -3,32 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SAAFIR_OS | iPad Core</title>
+    <title>SAAFIR_CORE v5</title>
     <style>
-        :root { --bg: #000; --panel: #1a1a1a; --accent: #39FF14; }
+        :root { --bg: #000; --accent: #39FF14; --panel: #111; }
         body, html { background: var(--bg); color: white; margin: 0; padding: 0; height: 100%; font-family: sans-serif; overflow: hidden; }
         
         .header {
-            height: 100px;
+            height: 80px;
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
             background: var(--panel);
             border-bottom: 2px solid var(--accent);
-            gap: 10px;
+            padding: 0 15px;
         }
 
-        .search-box { display: flex; width: 90%; max-width: 500px; }
+        .search-wrap { display: flex; width: 100%; max-width: 600px; }
         
         input {
             flex: 1;
             padding: 12px;
-            border-radius: 10px 0 0 10px;
+            border-radius: 8px 0 0 8px;
             border: 1px solid var(--accent);
             background: #000;
             color: var(--accent);
-            font-size: 16px; /* Prevents iPad zoom */
+            font-size: 16px; /* Blocks iPad auto-zoom and keyboard loops */
         }
 
         .btn {
@@ -36,62 +35,48 @@
             background: var(--accent);
             color: black;
             border: none;
-            border-radius: 0 10px 10px 0;
+            border-radius: 0 8px 8px 0;
             font-weight: bold;
+            cursor: pointer;
         }
 
-        /* The magic happens here: the frame is hidden until a video is chosen */
-        .window-container { height: calc(100% - 100px); width: 100%; position: relative; }
-        
-        iframe { 
-            width: 100%; 
-            height: 100%; 
-            border: none; 
-            background: #000;
-        }
-
-        /* Overlay to keep the iPad inside the frame */
-        .blocker { position: absolute; top: 0; left: 0; width: 100%; height: 50px; z-index: 5; }
+        .view-area { height: calc(100% - 82px); width: 100%; background: #000; }
+        iframe { width: 100%; height: 100%; border: none; }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <div style="font-size: 12px; color: var(--accent); font-weight: bold;">[ INTERNAL BROWSER MODE ]</div>
-        <div class="search-box">
-            <input type="text" id="userInput" placeholder="Search videos or shorts...">
-            <button class="btn" onclick="searchInside()">GO</button>
+        <div class="search-wrap">
+            <input type="text" id="term" placeholder="Search for 'Shorts' or a video...">
+            <button class="btn" onclick="openInternal()">GO</button>
         </div>
     </div>
 
-    <div class="window-container">
-        <div class="blocker"></div>
-        <iframe id="targetFrame" name="targetFrame" src="about:blank" allowfullscreen></iframe>
+    <div class="view-area">
+        <iframe id="main" src="about:blank" allowfullscreen></iframe>
     </div>
 
     <script>
-        const frame = document.getElementById('targetFrame');
-        const input = document.getElementById('userInput');
+        const frame = document.getElementById('main');
+        const input = document.getElementById('term');
 
-        function searchInside() {
-            const query = input.value.trim();
-            if (!query) return;
+        function openInternal() {
+            const val = input.value.trim();
+            if (!val) return;
 
-            // Blur the input to hide the keyboard instantly
+            // Step 1: Force keyboard down so it doesn't block the view
             input.blur();
 
-            // We use the Google Video Tab through an IGU bypass
-            // This is the only way to keep the search 'inside' the website on iPad
-            const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(query)}&tbm=vid&igu=1`;
+            // Step 2: Use the Google Video Engine
+            // The 'vfe' and 'source' parameters trick Google into thinking 
+            // it's an internal search, which keeps the video in the frame.
+            const googleVideoUrl = `https://www.google.com/search?q=${encodeURIComponent(val)}&tbm=vid&igu=1&ad_e=vfe&source=lnms`;
             
-            // We force the frame to navigate internally
-            frame.contentWindow.location.replace(searchUrl);
+            frame.src = googleVideoUrl;
         }
 
-        // Handle Enter key
-        input.addEventListener("keypress", (e) => {
-            if (e.key === "Enter") searchInside();
-        });
+        input.addEventListener("keypress", (e) => { if (e.key === "Enter") openInternal(); });
     </script>
 </body>
 </html>
