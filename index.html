@@ -3,15 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SAAFIR_V-OS_FINAL</title>
+    <title>SAAFIR_YT_AUTO</title>
     <style>
         body, html { margin: 0; padding: 0; height: 100%; background: #000; overflow: hidden; }
-        .monitor-frame { width: 100%; height: 100%; border: none; background: #111; }
-        .loading-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #39FF14; font-family: monospace; pointer-events: none; }
+        iframe { width: 100%; height: 100%; border: none; }
+        /* Add a "Safe Exit" button in case it freezes */
+        .exit-node { position: absolute; top: 10px; right: 10px; background: rgba(255,0,0,0.5); color: white; padding: 5px 10px; border-radius: 5px; font-family: monospace; cursor: pointer; font-size: 10px; }
     </style>
 </head>
 <body>
-    <div class="loading-text" id="status">CONNECTING TO VIRTUAL_NODE...</div>
-    <iframe class="monitor-frame" id="vnc" src="https://yt-emulator.onrender.com" onload="document.getElementById('status').style.display='none'"></iframe>
+    <div class="exit-node" onclick="location.reload()">REBOOT_NODE</div>
+    <iframe src="https://yt-emulator.onrender.com"></iframe>
 </body>
 </html>
