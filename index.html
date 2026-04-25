@@ -3,65 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SAAFIR_EMU_V1</title>
+    <title>S_BROWSER_ULTIMATE</title>
     <style>
-        body { background: #000; color: #0f0; font-family: 'Courier New', monospace; margin: 0; display: flex; flex-direction: column; height: 100vh; }
-        #terminal { padding: 20px; flex-grow: 1; overflow-y: auto; font-size: 14px; }
-        .input-area { background: #111; padding: 20px; border-top: 1px solid #0f0; }
-        input { background: #000; border: 1px solid #0f0; color: #0f0; padding: 10px; width: 70%; outline: none; }
-        button { background: #0f0; color: #000; border: none; padding: 10px 20px; font-weight: bold; cursor: pointer; }
-        #emu-screen { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 100; }
-        .close-emu { position: absolute; top: 10px; right: 10px; color: #f00; cursor: pointer; z-index: 101; font-weight: bold; }
+        body { margin: 0; background: #202124; font-family: sans-serif; height: 100vh; display: flex; flex-direction: column; }
+        .chrome-header { background: #dee1e6; padding: 10px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #ccc; }
+        .tab { background: #fff; padding: 8px 20px; border-radius: 8px 8px 0 0; font-size: 12px; font-weight: bold; }
+        .omnibox { flex-grow: 1; background: #fff; border-radius: 20px; padding: 5px 15px; display: flex; align-items: center; border: 1px solid #dfe1e5; }
+        input { border: none; width: 100%; outline: none; font-size: 14px; }
+        button { background: #1a73e8; color: white; border: none; padding: 8px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        #viewport { flex-grow: 1; background: #fff; }
+        iframe { width: 100%; height: 100%; border: none; }
     </style>
 </head>
 <body>
 
-    <div id="terminal">
-        <div>[SYSTEM READY]</div>
-        <div>[ENVIRONMENT: IPAD_Bypass_v1.2]</div>
-        <div>[STATUS: ENCRYPTED]</div>
-        <br>
-        <div>Enter Video ID or Link to initialize emulator...</div>
+    <div class="chrome-header">
+        <div class="tab">New Tab</div>
+        <div class="omnibox">
+            <input type="text" id="targetUrl" placeholder="Enter URL (e.g., youtube.com)">
+        </div>
+        <button onclick="launchEmu()">GO</button>
     </div>
 
-    <div id="emu-screen">
-        <span class="close-emu" onclick="closeEmu()">[ EXIT_EMULATOR ]</span>
-        <iframe id="emu-frame" src="" style="width:100%; height:100%; border:none;" allow="autoplay; fullscreen"></iframe>
-    </div>
-
-    <div class="input-area">
-        <input type="text" id="target" placeholder="video_id_here..." autofocus>
-        <button onclick="bootEmulator()">BOOT</button>
+    <div id="viewport">
+        <iframe id="emuFrame" src="https://www.browserling.com/embed"></iframe>
     </div>
 
     <script>
-        function bootEmulator() {
-            const val = document.getElementById('target').value.trim();
-            const frame = document.getElementById('emu-frame');
-            const screen = document.getElementById('emu-screen');
+        function launchEmu() {
+            const val = document.getElementById('targetUrl').value;
+            const frame = document.getElementById('emuFrame');
             
-            let id = "";
-            if(val.includes('v=')) id = val.split('v=')[1].split('&')[0];
-            else if(val.includes('youtu.be/')) id = val.split('/').pop();
-            else id = val;
-
-            if(id.length < 5) return;
-
-            // SCRAMBLED TUNNEL: 
-            // This is a base64 encoded string of a proxy service. 
-            // To the filter, this looks like random characters.
-            const part1 = "aHR0cHM6Ly93d3cueW91dHViZS1ub2Nvb2tpZS5jb20vZW1iZWQv";
-            const config = "?autoplay=1&modestbranding=1&rel=0&playsinline=1";
+            // To avoid the 404, we don't put the URL in the src.
+            // We use the "Refined Embed" link which is more stable.
+            // If you want to go to a specific site, you have to type it 
+            // INSIDE the Browserling screen once it loads.
             
-            const decodedBase = atob(part1);
-            frame.src = decodedBase + id + config;
+            frame.src = "https://www.browserling.com/browse/win/10/chrome/100/" + encodeURIComponent(val);
             
-            screen.style.display = "block";
-        }
-
-        function closeEmu() {
-            document.getElementById('emu-screen').style.display = "none";
-            document.getElementById('emu-frame').src = "";
+            // Note: The free version of Browserling has a 3-minute timer.
+            // If it asks for money, just clear your browser cookies or use an Incognito tab.
         }
     </script>
 </body>
