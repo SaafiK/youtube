@@ -2,69 +2,101 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Saafir's Stealth Portal</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SAAFIR_OS v4 | Final Build</title>
     <style>
-        :root { --bg: #050505; --panel: #111; --accent: #00ff88; --text: #fff; }
-        body, html { background: var(--bg); color: var(--text); margin: 0; padding: 0; height: 100%; font-family: sans-serif; overflow: hidden; }
+        :root { --bg: #050505; --panel: #111; --accent: #39FF14; --text: #eee; }
+        body, html { background: var(--bg); color: var(--text); margin: 0; padding: 0; height: 100%; font-family: 'Courier New', monospace; overflow: hidden; }
         
         .header {
             height: 100px;
             display: flex;
-            flex-direction: column;
             align-items: center;
-            justify-content: center;
+            justify-content: space-between;
+            padding: 0 20px;
             background: var(--panel);
             border-bottom: 2px solid var(--accent);
-            gap: 10px;
         }
 
-        .btn-group { display: flex; gap: 10px; }
+        .search-area { display: flex; gap: 10px; flex: 1; justify-content: center; flex-direction: column; align-items: center; }
         
+        input {
+            width: 400px;
+            padding: 10px;
+            background: #000;
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            outline: none;
+        }
+
         .btn {
             background: var(--accent);
             color: #000;
-            padding: 12px 24px;
-            border-radius: 30px;
+            padding: 8px 15px;
             border: none;
             font-weight: bold;
             cursor: pointer;
-            text-transform: uppercase;
             font-size: 12px;
-            letter-spacing: 1px;
         }
 
-        .window-container { height: calc(100% - 100px); width: 100%; background: #000; }
+        .btn:hover { background: #fff; box-shadow: 0 0 10px var(--accent); }
+
+        .window-container { height: calc(100% - 102px); width: 100%; background: #000; }
         iframe { width: 100%; height: 100%; border: none; }
+        
+        .proxy-note { font-size: 9px; color: #666; margin-top: 4px; }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <div style="color: var(--accent); font-size: 12px; font-weight: bold;">RESTRICTION BYPASS ACTIVE</div>
-        <div class="btn-group">
-            <button class="btn" onclick="openProxied('https://www.youtube.com')">Launch YouTube</button>
-            <button class="btn" style="background:#333; color:white;" onclick="openProxied('https://www.google.com')">Unblocked Google</button>
+        <div style="color: var(--accent); font-weight: bold;">[SAAFIR_CORE]</div>
+        
+        <div class="search-area">
+            <div style="display:flex; gap:5px;">
+                <input type="text" id="query" placeholder="Enter keyword or YouTube URL...">
+                <button class="btn" onclick="execute()">RUN</button>
+            </div>
+            <a href="https://cors-anywhere.herokuapp.com/corsdemo" target="_blank" class="proxy-note">Step 1: Click here to UNLOCK PROXY first</a>
+        </div>
+
+        <div style="display:flex; gap:5px;">
+            <button class="btn" style="background:#222; color:white;" onclick="loadSite('https://www.wikipedia.org')">WIKI</button>
+            <button class="btn" style="background:#222; color:white;" onclick="loadSite('https://www.google.com/search?igu=1')">GOOGLE</button>
         </div>
     </div>
 
     <div class="window-container">
-        <iframe 
-            id="proxyFrame"
-            src="about:blank" 
-            allowfullscreen>
-        </iframe>
+        <iframe id="mainFrame" src="about:blank"></iframe>
     </div>
 
     <script>
-        const frame = document.getElementById('proxyFrame');
+        const frame = document.getElementById('mainFrame');
+        const input = document.getElementById('query');
 
-        function openProxied(targetUrl) {
-            // We use CroxyProxy's public endpoint to wrap the site
-            // This hides the 'youtube.com' domain from your iPad's filters
-            const proxyUrl = "https://www.croxyproxy.com/_9/re_5/" + encodeURIComponent(targetUrl);
-            frame.src = proxyUrl;
+        function loadSite(url) { frame.src = url; }
+
+        function execute() {
+            const val = input.value.trim();
+            if (!val) return;
+
+            // Handle YouTube / Shorts
+            if (val.includes('youtube.com') || val.includes('youtu.be')) {
+                let id = "";
+                if (val.includes('v=')) id = val.split('v=')[1].split('&')[0];
+                else if (val.includes('shorts/')) id = val.split('shorts/')[1].split('?')[0];
+                else if (val.includes('youtu.be/')) id = val.split('youtu.be/')[1];
+                
+                frame.src = `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&modestbranding=1`;
+            } 
+            else {
+                // We use a specialized "Proxy-Friendly" search instance
+                // This instance is hosted on a different protocol that allows iframes
+                frame.src = `https://priv.au/search?q=${encodeURIComponent(val)}&categories=videos`;
+            }
         }
+
+        input.addEventListener("keypress", (e) => { if (e.key === "Enter") execute(); });
     </script>
 </body>
 </html>
