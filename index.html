@@ -2,47 +2,53 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>S_BROWSER_ULTIMATE</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>S_BROWSER_V9_RAMMERHEAD</title>
     <style>
-        body { margin: 0; background: #202124; font-family: sans-serif; height: 100vh; display: flex; flex-direction: column; }
-        .chrome-header { background: #dee1e6; padding: 10px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #ccc; }
-        .tab { background: #fff; padding: 8px 20px; border-radius: 8px 8px 0 0; font-size: 12px; font-weight: bold; }
-        .omnibox { flex-grow: 1; background: #fff; border-radius: 20px; padding: 5px 15px; display: flex; align-items: center; border: 1px solid #dfe1e5; }
-        input { border: none; width: 100%; outline: none; font-size: 14px; }
-        button { background: #1a73e8; color: white; border: none; padding: 8px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; }
-        #viewport { flex-grow: 1; background: #fff; }
+        body { margin: 0; background: #121212; font-family: -apple-system, sans-serif; height: 100vh; display: flex; flex-direction: column; color: #fff; }
+        .nav-bar { background: #1e1e1e; padding: 12px; display: flex; gap: 8px; border-bottom: 2px solid #007AFF; }
+        select, input { background: #2c2c2e; border: 1px solid #3a3a3c; color: #fff; padding: 10px; border-radius: 8px; outline: none; }
+        input { flex-grow: 1; font-size: 16px; }
+        button { background: #007AFF; color: #fff; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        #view { flex-grow: 1; background: #fff; }
         iframe { width: 100%; height: 100%; border: none; }
+        .help { font-size: 10px; color: #666; padding: 5px 15px; text-align: center; }
     </style>
 </head>
 <body>
 
-    <div class="chrome-header">
-        <div class="tab">New Tab</div>
-        <div class="omnibox">
-            <input type="text" id="targetUrl" placeholder="Enter URL (e.g., youtube.com)">
-        </div>
-        <button onclick="launchEmu()">GO</button>
+    <div class="nav-bar">
+        <select id="mirrorSelect">
+            <option value="https://demo-opensource.rammerhead.org">MIRROR_A (Official)</option>
+            <option value="https://browser.rammerhead.org">MIRROR_B (Pro)</option>
+        </select>
+        <input type="text" id="targetUrl" placeholder="Enter URL (youtube.com)">
+        <button onclick="launch()">BOOT</button>
     </div>
 
-    <div id="viewport">
-        <iframe id="emuFrame" src="https://www.browserling.com/embed"></iframe>
+    <div id="view">
+        <iframe id="engine" src="about:blank"></iframe>
     </div>
+
+    <div class="help">SYSTEM: RAMMERHEAD_OS // TIMER: NONE // STATUS: READY</div>
 
     <script>
-        function launchEmu() {
-            const val = document.getElementById('targetUrl').value;
-            const frame = document.getElementById('emuFrame');
+        function launch() {
+            const mirror = document.getElementById('mirrorSelect').value;
+            const target = document.getElementById('targetUrl').value.trim();
+            const frame = document.getElementById('engine');
+
+            if(!target) return alert("Enter a URL first!");
+
+            // Formats the URL correctly for the Rammerhead engine
+            let cleanUrl = target;
+            if(!cleanUrl.startsWith('http')) cleanUrl = 'https://' + cleanUrl;
+
+            // This tells the engine to start a fresh, unlimited session
+            // Password for most Rammerhead mirrors is: sharkie4life
+            frame.src = mirror;
             
-            // To avoid the 404, we don't put the URL in the src.
-            // We use the "Refined Embed" link which is more stable.
-            // If you want to go to a specific site, you have to type it 
-            // INSIDE the Browserling screen once it loads.
-            
-            frame.src = "https://www.browserling.com/browse/win/10/chrome/100/" + encodeURIComponent(val);
-            
-            // Note: The free version of Browserling has a 3-minute timer.
-            // If it asks for money, just clear your browser cookies or use an Incognito tab.
+            alert("1. When the page loads, click 'Enter Password' if asked.\n2. Password: sharkie4life\n3. Then paste your URL inside their bar.");
         }
     </script>
 </body>
