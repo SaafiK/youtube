@@ -3,118 +3,129 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SAAFIR_OS | Media Pipe</title>
+    <title>SAAFIR_VIRTUAL_OS</title>
     <style>
-        :root { --bg: #000; --accent: #39FF14; --panel: #111; }
-        body, html { background: var(--bg); color: white; margin: 0; padding: 0; height: 100%; font-family: sans-serif; overflow: hidden; }
+        :root { --bg: #000; --accent: #39FF14; --win-bg: #1a1a1a; }
+        body, html { background: var(--bg); color: white; margin: 0; padding: 0; height: 100%; font-family: 'Courier New', monospace; overflow: hidden; }
         
-        .header {
-            height: 90px;
+        /* Taskbar */
+        .taskbar {
+            height: 60px;
+            background: #111;
             display: flex;
             align-items: center;
-            justify-content: center;
-            background: var(--panel);
+            padding: 0 20px;
             border-bottom: 2px solid var(--accent);
-            padding: 0 15px;
-            gap: 10px;
+            gap: 15px;
         }
 
         input {
-            flex: 1;
-            max-width: 450px;
-            padding: 12px;
-            border-radius: 8px;
-            border: 1px solid var(--accent);
             background: #000;
+            border: 1px solid var(--accent);
             color: var(--accent);
-            font-size: 16px; /* Blocks iPad keyboard zoom loop */
+            padding: 8px 15px;
+            width: 300px;
+            border-radius: 5px;
+            font-size: 16px; /* Prevents iPad zoom-in */
         }
 
         .btn {
-            padding: 12px 20px;
             background: var(--accent);
             color: black;
             border: none;
-            border-radius: 8px;
+            padding: 8px 15px;
             font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
         }
 
-        /* The 'Ghost' Window that kills the session when closed */
-        #ghostWindow {
-            position: fixed;
-            top: 92px;
-            left: 0;
-            width: 100%;
-            height: calc(100% - 92px);
-            background: #000;
+        /* Virtual Window Emulator */
+        #emulatorWindow {
+            position: absolute;
+            top: 80px;
+            left: 5%;
+            width: 90%;
+            height: 80%;
+            background: var(--win-bg);
+            border: 2px solid #444;
+            border-radius: 10px;
             display: none;
-            z-index: 100;
+            flex-direction: column;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+            z-index: 1000;
         }
 
-        iframe { width: 100%; height: 100%; border: none; }
-        
-        .close-bar {
-            height: 40px;
-            background: #222;
+        .win-header {
+            height: 35px;
+            background: #333;
             display: flex;
-            justify-content: flex-end;
+            justify-content: space-between;
             align-items: center;
-            padding: 0 10px;
+            padding: 0 15px;
+            border-radius: 10px 10px 0 0;
         }
+
+        .win-body { flex: 1; background: #fff; position: relative; }
+        
+        iframe { width: 100%; height: 100%; border: none; }
+
+        .close-dot { width: 15px; height: 15px; background: #ff5f56; border-radius: 50%; cursor: pointer; }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <input type="text" id="pipeInput" placeholder="Search or paste link...">
-        <button class="btn" onclick="launchPipe()">LAUNCH</button>
+    <div class="taskbar">
+        <div style="color: var(--accent); font-weight: bold;">[SAAFIR_V-OS]</div>
+        <input type="text" id="vSearch" placeholder="Search Google or YouTube...">
+        <button class="btn" onclick="bootEmulator()">BOOT ENGINE</button>
     </div>
 
-    <div id="ghostWindow">
-        <div class="close-bar">
-            <button onclick="killPipe()" style="color:red; background:none; border:none; font-weight:bold;">✕ CLOSE & CLEAR SESSION</button>
+    <div id="emulatorWindow">
+        <div class="win-header">
+            <div style="font-size: 12px; color: #aaa;">Virtual Browser Instance #1</div>
+            <div class="close-dot" onclick="shutdownEmulator()"></div>
         </div>
-        <iframe id="mainPipe" allow="autoplay; fullscreen"></iframe>
+        <div class="win-body">
+            <iframe id="vFrame" allow="autoplay; fullscreen"></iframe>
+        </div>
     </div>
 
-    <div style="display:flex; height:100%; align-items:center; justify-content:center; color:#333;">
-        System Ready...
+    <div id="desktop" style="display:flex; height:100%; align-items:center; justify-content:center; color:#222;">
+        VIRTUAL MACHINE IDLE...
     </div>
 
     <script>
-        const frame = document.getElementById('mainPipe');
-        const win = document.getElementById('ghostWindow');
-        const input = document.getElementById('pipeInput');
+        const win = document.getElementById('emulatorWindow');
+        const frame = document.getElementById('vFrame');
+        const input = document.getElementById('vSearch');
 
-        function launchPipe() {
+        function bootEmulator() {
             const val = input.value.trim();
             if(!val) return;
 
-            input.blur(); // Drops iPad keyboard instantly
+            input.blur(); // Drops iPad keyboard
 
-            let finalUrl = "";
-
-            // If it's a YouTube link, we use the NO-COOKIE player with specific flags
+            // This is the core 'Emulator' logic. 
+            // Instead of standard search, we use the Google 'igu' bypass inside a virtual window.
+            // This is the most consistent way to force Google to load on a restricted iPad.
+            let bootUrl = `https://www.google.com/search?q=${encodeURIComponent(val)}&igu=1`;
+            
+            // If it's a direct YouTube link, use the no-cookie player which acts like an emulator
             if (val.includes('youtube.com') || val.includes('youtu.be')) {
                 let id = val.includes('v=') ? val.split('v=')[1].split('&')[0] : val.split('/').pop();
-                // Flag 'origin' tricks the iPad into thinking the video is local
-                finalUrl = `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&modestbranding=1&rel=0&showinfo=0&origin=${window.location.origin}`;
-            } else {
-                // If it's a search, we use the Google 'IGU' bypass we found earlier
-                finalUrl = `https://www.google.com/search?q=${encodeURIComponent(val)}+video&tbm=vid&igu=1`;
+                bootUrl = `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&modestbranding=1&rel=0`;
             }
 
-            win.style.display = 'block';
-            frame.src = finalUrl;
+            win.style.display = 'flex';
+            frame.src = bootUrl;
         }
 
-        function killPipe() {
-            frame.src = "about:blank"; // Force the iPad to drop the connection
+        function shutdownEmulator() {
+            frame.src = "about:blank";
             win.style.display = 'none';
-            input.value = "";
         }
 
-        input.addEventListener("keypress", (e) => { if (e.key === "Enter") launchPipe(); });
+        input.addEventListener("keypress", (e) => { if (e.key === "Enter") bootEmulator(); });
     </script>
 </body>
 </html>
