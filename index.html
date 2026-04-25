@@ -2,97 +2,44 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SAAFIR_YT_BYPASS</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SAAFIR_YT_OPENER</title>
     <style>
-        :root { --accent: #ff0000; --bg: #0a0a0a; }
-        body, html { margin: 0; padding: 0; height: 100%; background: var(--bg); font-family: 'Segoe UI', sans-serif; color: white; overflow: hidden; }
-        
-        /* Input UI */
-        .nav-ui {
-            position: absolute; top: 0; width: 100%; height: 60px;
-            background: rgba(0,0,0,0.8); display: flex; align-items: center;
-            justify-content: center; z-index: 100; border-bottom: 1px solid #333;
-            transition: transform 0.3s;
-        }
-        .nav-ui.hidden { transform: translateY(-100%); }
-
-        input {
-            width: 60%; padding: 10px 20px; border-radius: 25px;
-            border: 1px solid #444; background: #1a1a1a; color: white;
-            outline: none; font-size: 14px;
-        }
-        
-        button {
-            margin-left: 10px; padding: 10px 20px; border-radius: 25px;
-            background: var(--accent); border: none; color: white;
-            font-weight: bold; cursor: pointer;
-        }
-
-        /* The Player Container */
-        #player-container { width: 100vw; height: 100vh; background: #000; }
-        iframe { width: 100%; height: 100%; border: none; }
-
-        .hint { position: absolute; bottom: 10px; width: 100%; text-align: center; font-size: 10px; color: #666; pointer-events: none; }
+        body { background: #111; color: #fff; font-family: -apple-system, sans-serif; text-align: center; padding: 20px; }
+        .app-card { background: #222; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        input { width: 80%; padding: 15px; border-radius: 10px; border: none; margin-bottom: 20px; font-size: 16px; }
+        .btn { background: #ff4500; color: white; padding: 15px 30px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; text-decoration: none; display: inline-block; }
     </style>
 </head>
 <body>
 
-    <div class="nav-ui" id="navbar">
-        <input type="text" id="ytLink" placeholder="Paste YouTube Link (or ID) here...">
-        <button onclick="loadVideo()">LOAD</button>
+    <div class="app-card">
+        <h2>STEALTH_OPENER_V7</h2>
+        <p>If embeds are blocked, this uses Search-Proxying.</p>
+        <input type="text" id="userInput" placeholder="Paste YouTube Link...">
+        <br>
+        <button class="btn" onclick="openStealth()">OPEN IN STEALTH_MODE</button>
     </div>
-
-    <div id="player-container">
-        <div style="display:flex; height:100%; align-items:center; justify-content:center; color:#444;">
-            READY FOR STREAM_INPUT...
-        </div>
-    </div>
-
-    <div class="hint">TAP TOP TO SHOW/HIDE INPUT BAR</div>
 
     <script>
-        const navbar = document.getElementById('navbar');
-        const input = document.getElementById('ytLink');
-        const container = document.getElementById('player-container');
-
-        function loadVideo() {
-            let val = input.value.trim();
-            if (!val) return;
-
-            // Extract Video ID using Regex (Works for mobile, desktop, and short links)
-            let videoId = "";
-            const regex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
-            const match = val.match(regex);
+        function openStealth() {
+            const input = document.getElementById('userInput').value;
+            let id = "";
             
-            if (match && match[1]) {
-                videoId = match[1];
-            } else if (val.length === 11) {
-                videoId = val; // Direct ID entry
-            } else {
-                alert("Invalid Link. Please paste a full YouTube URL.");
-                return;
-            }
+            if(input.includes('v=')) id = input.split('v=')[1].split('&')[0];
+            else if(input.includes('youtu.be/')) id = input.split('/').pop();
+            else id = input;
 
-            // Using the 'youtube-nocookie' mirror which is rarely blocked
-            // We also add 'rel=0' to prevent related videos from showing
-            container.innerHTML = `<iframe 
-                src="https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1" 
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                allowfullscreen></iframe>`;
+            if(id.length < 5) return alert("Paste a link first!");
+
+            // METHOD: We send the user to the DuckDuckGo video search 
+            // specifically for that video ID. 
+            // You can watch the video DIRECTLY in the search results 
+            // without ever leaving DuckDuckGo or visiting YouTube.
+            const ddgUrl = `https://duckduckgo.com/?q=https%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3D${id}&ia=videos&iax=videos`;
             
-            navbar.classList.add('hidden');
+            window.location.href = ddgUrl;
         }
-
-        // Toggle UI on tap
-        document.body.addEventListener('click', (e) => {
-            if (e.clientY < 100) {
-                navbar.classList.remove('hidden');
-            }
-        });
-
-        // Enter key support
-        input.addEventListener("keypress", (e) => { if (e.key === "Enter") loadVideo(); });
     </script>
 </body>
 </html>
