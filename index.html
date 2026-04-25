@@ -29,14 +29,14 @@
             const url = document.getElementById('ytUrl').value.trim();
             if(!url) return alert("Enter a link first!");
 
-            // ytdown uses a search query format. 
-            // We encode the URL so the school filter doesn't see 
-            // the 'youtube.com' string inside the redirected link.
+            // Encoding the URL turns symbols like ':' and '/' into code
+            // This can sometimes sneak past filters that look for "https://"
             const encodedUrl = encodeURIComponent(url);
+            
+            // This is the direct search path for app.ytdown.to
             const target = `https://app.ytdown.to/search?q=${encodedUrl}`;
 
-            // We use top-level navigation to ensure the site 
-            // has full permissions to play the video.
+            // We use window.location because iframes will be blocked
             window.location.href = target;
         }
     </script>
