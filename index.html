@@ -3,103 +3,85 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SAAFIR_V-OS_UNBLOCKED</title>
+    <title>SAAFIR_V-OS_CORE</title>
     <style>
-        :root { --bg: #000; --accent: #39FF14; --ui: #111; }
-        body, html { background: var(--bg); color: white; margin: 0; padding: 0; height: 100%; font-family: 'Courier New', monospace; overflow: hidden; }
+        :root { --bg: #000; --accent: #39FF14; --ui: #1a1a1a; }
+        body, html { background: var(--bg); color: white; margin: 0; padding: 0; height: 100%; font-family: monospace; overflow: hidden; }
         
-        /* Dashboard */
-        .taskbar {
-            height: 70px;
+        .header {
+            height: 60px;
             background: var(--ui);
             display: flex;
             align-items: center;
-            padding: 0 20px;
+            justify-content: center;
             border-bottom: 2px solid var(--accent);
-            gap: 15px;
+            gap: 10px;
+            padding: 0 10px;
         }
 
         input {
             flex: 1;
-            max-width: 500px;
+            max-width: 400px;
             padding: 10px;
             background: #000;
             border: 1px solid var(--accent);
             color: var(--accent);
-            font-size: 16px; /* Vital for iPad keyboard control */
-            border-radius: 4px;
+            font-size: 16px; /* Critical for iPad keyboard control */
+            border-radius: 5px;
         }
 
         .btn {
+            padding: 10px 15px;
             background: var(--accent);
-            color: #000;
-            padding: 10px 20px;
+            color: black;
             border: none;
             font-weight: bold;
-            border-radius: 4px;
-            cursor: pointer;
+            border-radius: 5px;
+            font-size: 12px;
         }
 
-        /* The Virtual Window */
-        .viewport { height: calc(100% - 72px); width: 100%; background: #fff; }
+        .viewport { height: calc(100% - 62px); width: 100%; background: #fff; position: relative; }
         iframe { width: 100%; height: 100%; border: none; }
-
-        .overlay-msg {
-            position: absolute;
-            bottom: 20px;
-            left: 20px;
-            background: rgba(0,0,0,0.8);
-            color: var(--accent);
-            padding: 5px 10px;
-            font-size: 10px;
-            pointer-events: none;
-        }
     </style>
 </head>
 <body>
 
-    <div class="taskbar">
-        <div style="color: var(--accent); font-weight: bold;">V-BROWSER</div>
-        <input type="text" id="target" placeholder="Search or Paste YouTube Link...">
-        <button class="btn" onclick="execute()">BOOT</button>
-        <button class="btn" style="background:#333; color:white;" onclick="reset()">RESET</button>
+    <div class="header">
+        <input type="text" id="target" placeholder="Search or Link...">
+        <button class="btn" onclick="launch('google')">G-TUNNEL</button>
+        <button class="btn" style="background:#00a1f1;" onclick="launch('bing')">B-TUNNEL</button>
     </div>
 
     <div class="viewport">
-        <iframe id="screen" src="https://www.google.com/search?igu=1" allow="autoplay; fullscreen"></iframe>
-        <div class="overlay-msg">STATUS: ENCRYPTED_TUNNEL_ACTIVE</div>
+        <iframe id="main" src="https://www.google.com/search?igu=1"></iframe>
     </div>
 
     <script>
-        const frame = document.getElementById('screen');
+        const frame = document.getElementById('main');
         const input = document.getElementById('target');
 
-        function execute() {
+        function launch(type) {
             const val = input.value.trim();
             if(!val) return;
             input.blur();
 
-            // LOGIC: If it's a YouTube URL, we force it into a No-Cookie tunnel.
-            // If it's just a search, we use the Google IGU bypass.
-            if (val.includes('youtube.com') || val.includes('youtu.be')) {
-                let id = "";
-                if (val.includes('v=')) id = val.split('v=')[1].split('&')[0];
-                else if (val.includes('shorts/')) id = val.split('shorts/')[1].split('?')[0];
-                else id = val.split('/').pop();
+            let finalUrl = "";
 
-                // This specific URL format is the hardest for iPads to detect as 'YouTube'
-                frame.src = `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0&showinfo=0&modestbranding=1`;
+            if (type === 'google') {
+                // The 'Google Translate' Tunnel: Hardest to block on iPads
+                finalUrl = `https://translate.google.com/translate?sl=auto&tl=en&u=${encodeURIComponent(val)}`;
+                if (!val.includes('http')) {
+                    finalUrl = `https://www.google.com/search?q=${encodeURIComponent(val)}&igu=1`;
+                }
             } else {
-                frame.src = `https://www.google.com/search?q=${encodeURIComponent(val)}&igu=1`;
+                // The 'Bing Video' Tunnel: Better for 'Refused to connect' issues on computer
+                finalUrl = `https://www.bing.com/videos/search?q=${encodeURIComponent(val)}&view=detail`;
             }
+
+            frame.src = finalUrl;
         }
 
-        function reset() {
-            frame.src = "https://www.google.com/search?igu=1";
-            input.value = "";
-        }
-
-        input.addEventListener("keypress", (e) => { if (e.key === "Enter") execute(); });
+        input.addEventListener("keypress", (e) => { if (e.key === "Enter") launch('google'); });
     </script>
 </body>
 </html>
