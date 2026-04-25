@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Saafir's iPad Portal</title>
+    <style>
+        :root { --bg: #0a0a0a; --panel: #1a1a1a; --accent: #FF0000; --text: #ffffff; }
+        body, html { background: var(--bg); color: var(--text); margin: 0; padding: 0; height: 100%; font-family: sans-serif; overflow: hidden; }
+        
+        .header {
+            height: 140px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: var(--panel);
+            border-bottom: 1px solid #333;
+            gap: 10px;
+        }
+
+        .search-container { display: flex; gap: 5px; width: 90%; max-width: 600px; }
+        
+        input {
+            flex: 1;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #444;
+            background: #2a2a2a;
+            color: white;
+        }
+
+        .btn {
+            background: var(--accent);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .window-container { height: calc(100% - 140px); width: 100%; background: #000; }
+        iframe { width: 100%; height: 100%; border: none; }
+        
+        .status-bar { font-size: 12px; color: #888; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div class="status-bar">YouTube Search Portal (iPad Mode)</div>
+        <div class="search-container">
+            <input type="text" id="query" placeholder="Search for a video...">
+            <button class="btn" onclick="searchYouTube()">Search</button>
+        </div>
+        <div style="display:flex; gap: 10px;">
+            <button class="btn" style="background:#444" onclick="loadSite('https://www.dogpile.com')">Web Search</button>
+            <button class="btn" style="background:#444" onclick="loadSite('https://www.wikipedia.org')">Wiki</button>
+        </div>
+    </div>
+
+    <div class="window-container">
+        <iframe 
+            id="mainFrame"
+            src="https://www.dogpile.com" 
+            sandbox="allow-scripts allow-same-origin allow-forms allow-presentation"
+            allowfullscreen>
+        </iframe>
+    </div>
+
+    <script>
+        const frame = document.getElementById('mainFrame');
+        const queryInput = document.getElementById('query');
+
+        function loadSite(url) {
+            frame.src = url;
+        }
+
+        function searchYouTube() {
+    const query = queryInput.value.trim();
+    if (query) {
+        // Using Swisscows which is usually more lenient with frames
+        const searchUrl = `https://swisscows.com/en/video?query=${encodeURIComponent(query)}+site%3Ayoutube.com`;
+        frame.src = searchUrl;
+    }
+}
+
+        // Allow pressing "Enter" to search
+        queryInput.addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                searchYouTube();
+            }
+        });
+    </script>
+</body>
+</html>
