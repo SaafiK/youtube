@@ -2,61 +2,79 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Saafir's iPad Portal</title>
     <style>
-        :root { --bg: #0a0a0a; --panel: #1a1a1a; --accent: #FF0000; --text: #ffffff; }
-        body, html { background: var(--bg); color: var(--text); margin: 0; padding: 0; height: 100%; font-family: sans-serif; overflow: hidden; }
+        :root { --bg: #0a0a0a; --panel: #1a1a1a; --accent: #FF0000; --blue: #007AFF; --text: #ffffff; }
+        body, html { background: var(--bg); color: var(--text); margin: 0; padding: 0; height: 100%; font-family: -apple-system, sans-serif; overflow: hidden; }
         
         .header {
-            height: 140px;
+            height: 160px;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             background: var(--panel);
             border-bottom: 1px solid #333;
-            gap: 10px;
+            gap: 12px;
+            padding: 0 10px;
         }
 
-        .search-container { display: flex; gap: 5px; width: 90%; max-width: 600px; }
+        .search-container { display: flex; gap: 8px; width: 100%; max-width: 600px; }
         
         input {
             flex: 1;
             padding: 12px;
-            border-radius: 8px;
+            border-radius: 10px;
             border: 1px solid #444;
             background: #2a2a2a;
             color: white;
+            font-size: 16px; /* Prevents iPad zoom on focus */
         }
 
         .btn {
-            background: var(--accent);
-            color: white;
-            padding: 10px 20px;
-            border-radius: 8px;
+            padding: 10px 18px;
+            border-radius: 10px;
             border: none;
             font-weight: bold;
             cursor: pointer;
+            color: white;
+            transition: 0.2s;
         }
 
-        .window-container { height: calc(100% - 140px); width: 100%; background: #000; }
-        iframe { width: 100%; height: 100%; border: none; }
+        .btn-red { background: var(--accent); }
+        .btn-blue { background: var(--blue); }
+        .btn-gray { background: #444; }
+        .btn:active { opacity: 0.7; transform: scale(0.98); }
+
+        .window-container { height: calc(100% - 160px); width: 100%; background: #000; display: flex; justify-content: center; }
         
-        .status-bar { font-size: 12px; color: #888; }
+        /* The Frame */
+        iframe { 
+            width: 100%; 
+            height: 100%; 
+            border: none; 
+            transition: width 0.3s ease;
+        }
+
+        /* Shorts Mode Class */
+        .shorts-view { max-width: 450px; border-left: 1px solid #333; border-right: 1px solid #333; }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <div class="status-bar">YouTube Search Portal (iPad Mode)</div>
+        <div style="font-size: 14px; font-weight: bold; color: var(--accent);">Saafir's Multi-Portal</div>
+        
         <div class="search-container">
-            <input type="text" id="query" placeholder="Search for a video...">
-            <button class="btn" onclick="searchYouTube()">Search</button>
+            <input type="text" id="query" placeholder="Search Shorts, Videos, or Paste Link...">
+            <button class="btn btn-red" onclick="handleSearch('video')">Search</button>
         </div>
-        <div style="display:flex; gap: 10px;">
-            <button class="btn" style="background:#444" onclick="loadSite('https://www.dogpile.com')">Web Search</button>
-            <button class="btn" style="background:#444" onclick="loadSite('https://www.wikipedia.org')">Wiki</button>
+
+        <div style="display:flex; gap: 8px;">
+            <button class="btn btn-red" onclick="handleSearch('shorts')">Shorts Mode</button>
+            <button class="btn btn-blue" onclick="loadSite('https://www.dogpile.com')">Web</button>
+            <button class="btn btn-gray" onclick="loadSite('https://www.wikipedia.org')">Wiki</button>
         </div>
     </div>
 
@@ -64,6 +82,7 @@
         <iframe 
             id="mainFrame"
             src="https://www.dogpile.com" 
+            referrerpolicy="no-referrer"
             sandbox="allow-scripts allow-same-origin allow-forms allow-presentation"
             allowfullscreen>
         </iframe>
@@ -74,24 +93,43 @@
         const queryInput = document.getElementById('query');
 
         function loadSite(url) {
+            frame.classList.remove('shorts-view');
             frame.src = url;
         }
 
-        function searchYouTube() {
-    const query = queryInput.value.trim();
-    if (query) {
-        // Using Swisscows which is usually more lenient with frames
-        const searchUrl = `https://swisscows.com/en/video?query=${encodeURIComponent(query)}+site%3Ayoutube.com`;
-        frame.src = searchUrl;
-    }
-}
+        function handleSearch(type) {
+            const val = queryInput.value.trim();
+            
+            // 1. Check if it's a direct YouTube link
+            if (val.includes('youtube.com') || val.includes('youtu.be')) {
+                let videoId = "";
+                if (val.includes('v=')) videoId = val.split('v=')[1].split('&')[0];
+                else if (val.includes('shorts/')) videoId = val.split('shorts/')[1].split('?')[0];
+                else if (val.includes('youtu.be/')) videoId = val.split('youtu.be/')[1];
 
-        // Allow pressing "Enter" to search
-        queryInput.addEventListener("keypress", function(event) {
-            if (event.key === "Enter") {
-                searchYouTube();
+                if (type === 'shorts') frame.classList.add('shorts-view');
+                else frame.classList.remove('shorts-view');
+
+                // The "Fix" URL: Includes origin and modest branding to bypass some mobile blocks
+                frame.src = `https://www.youtube-nocookie.com/embed/${videoId}?modestbranding=1&rel=0&autoplay=1`;
+                return;
             }
-        });
+
+            // 2. Otherwise, use Search
+            if (val) {
+                frame.classList.remove('shorts-view');
+                if (type === 'shorts') {
+                    frame.classList.add('shorts-view');
+                    // Bing is currently the most iframe-friendly for video results
+                    frame.src = `https://www.bing.com/videos/search?q=${encodeURIComponent(val)}+youtube+shorts`;
+                } else {
+                    frame.src = `https://swisscows.com/en/video?query=${encodeURIComponent(val)}+site%3Ayoutube.com`;
+                }
+            }
+        }
+
+        // Enter key support
+        queryInput.addEventListener("keypress", (e) => { if (e.key === "Enter") handleSearch('video'); });
     </script>
 </body>
 </html>
