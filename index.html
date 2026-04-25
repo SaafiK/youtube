@@ -3,14 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SAAFIR_CORE | Ghost Window</title>
+    <title>SAAFIR_OS | Media Pipe</title>
     <style>
         :root { --bg: #000; --accent: #39FF14; --panel: #111; }
         body, html { background: var(--bg); color: white; margin: 0; padding: 0; height: 100%; font-family: sans-serif; overflow: hidden; }
         
-        /* Dashboard Control */
         .header {
-            height: 80px;
+            height: 90px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -22,13 +21,13 @@
 
         input {
             flex: 1;
-            max-width: 400px;
+            max-width: 450px;
             padding: 12px;
             border-radius: 8px;
             border: 1px solid var(--accent);
             background: #000;
             color: var(--accent);
-            font-size: 16px; /* Prevents iPad zoom/keyboard loops */
+            font-size: 16px; /* Blocks iPad keyboard zoom loop */
         }
 
         .btn {
@@ -38,96 +37,84 @@
             border: none;
             border-radius: 8px;
             font-weight: bold;
-            cursor: pointer;
         }
 
-        /* Virtual Window */
-        .window-area { 
-            height: calc(100% - 82px); 
-            width: 100%; 
-            background: #000; 
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        /* This is the container that 'disappears' when you close the tab */
-        #virtualContainer {
+        /* The 'Ghost' Window that kills the session when closed */
+        #ghostWindow {
+            position: fixed;
+            top: 92px;
+            left: 0;
             width: 100%;
-            height: 100%;
-            display: none; /* Starts hidden */
+            height: calc(100% - 92px);
+            background: #000;
+            display: none;
+            z-index: 100;
         }
 
         iframe { width: 100%; height: 100%; border: none; }
-
-        .close-btn {
-            position: absolute;
-            top: 90px;
-            right: 20px;
-            background: rgba(255,0,0,0.7);
-            color: white;
-            border: none;
-            padding: 5px 15px;
-            border-radius: 5px;
-            z-index: 100;
+        
+        .close-bar {
+            height: 40px;
+            background: #222;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            padding: 0 10px;
         }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <input type="text" id="targetInput" placeholder="Paste link or search term...">
-        <button class="btn" onclick="openGhostWindow()">LAUNCH</button>
-        <button class="btn" style="background:#333; color:white;" onclick="closeWindow()">CLOSE</button>
+        <input type="text" id="pipeInput" placeholder="Search or paste link...">
+        <button class="btn" onclick="launchPipe()">LAUNCH</button>
     </div>
 
-    <div class="window-area">
-        <div id="virtualContainer">
-            <button class="close-btn" onclick="closeWindow()">X CLOSE WINDOW</button>
-            <iframe id="ghostFrame" allow="autoplay; fullscreen"></iframe>
+    <div id="ghostWindow">
+        <div class="close-bar">
+            <button onclick="killPipe()" style="color:red; background:none; border:none; font-weight:bold;">✕ CLOSE & CLEAR SESSION</button>
         </div>
-        <div id="placeholder" style="color: #444;">Ready for Launch...</div>
+        <iframe id="mainPipe" allow="autoplay; fullscreen"></iframe>
+    </div>
+
+    <div style="display:flex; height:100%; align-items:center; justify-content:center; color:#333;">
+        System Ready...
     </div>
 
     <script>
-        const frame = document.getElementById('ghostFrame');
-        const container = document.getElementById('virtualContainer');
-        const placeholder = document.getElementById('placeholder');
-        const input = document.getElementById('targetInput');
+        const frame = document.getElementById('mainPipe');
+        const win = document.getElementById('ghostWindow');
+        const input = document.getElementById('pipeInput');
 
-        function openGhostWindow() {
+        function launchPipe() {
             const val = input.value.trim();
-            if (!val) return;
+            if(!val) return;
 
-            input.blur(); // Drops iPad keyboard
+            input.blur(); // Drops iPad keyboard instantly
 
-            // Logic: We use a search engine that specializes in direct video playback
-            // This avoids 'Refused to connect' because it doesn't use standard headers
             let finalUrl = "";
 
+            // If it's a YouTube link, we use the NO-COOKIE player with specific flags
             if (val.includes('youtube.com') || val.includes('youtu.be')) {
                 let id = val.includes('v=') ? val.split('v=')[1].split('&')[0] : val.split('/').pop();
-                // We use a specific instance that bypasses the X-Frame-Options block
-                finalUrl = `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&modestbranding=1`;
+                // Flag 'origin' tricks the iPad into thinking the video is local
+                finalUrl = `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&modestbranding=1&rel=0&showinfo=0&origin=${window.location.origin}`;
             } else {
-                // Bing Video Search is much more 'frame-friendly' on iPad networks
-                finalUrl = `https://www.bing.com/videos/search?q=${encodeURIComponent(val)}&view=detail&ru=%2fvideos%2fsearch%3fq%3d${encodeURIComponent(val)}`;
+                // If it's a search, we use the Google 'IGU' bypass we found earlier
+                finalUrl = `https://www.google.com/search?q=${encodeURIComponent(val)}+video&tbm=vid&igu=1`;
             }
 
-            // Reveal the virtual window
-            placeholder.style.display = 'none';
-            container.style.display = 'block';
+            win.style.display = 'block';
             frame.src = finalUrl;
         }
 
-        function closeWindow() {
-            frame.src = "about:blank"; // Kills the session
-            container.style.display = 'none';
-            placeholder.style.display = 'block';
+        function killPipe() {
+            frame.src = "about:blank"; // Force the iPad to drop the connection
+            win.style.display = 'none';
             input.value = "";
         }
 
-        input.addEventListener("keypress", (e) => { if (e.key === "Enter") openGhostWindow(); });
+        input.addEventListener("keypress", (e) => { if (e.key === "Enter") launchPipe(); });
     </script>
 </body>
 </html>
